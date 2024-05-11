@@ -56,7 +56,7 @@ class EnrollmentWindow(tk.Toplevel):
                 self.subject_listbox.insert(tk.END, f"Subject::{subject.ID} -- mark = {subject.mark} --grade = {subject.grade}")
         else:
             # If no subjects are enrolled, display a message indicating that
-            self.subject_listbox.insert(tk.END, "No enrolled subjects")
+            self.subject_listbox.insert(tk.END, "No enrolled subject")
 
     def enrol_in_subject(self):
         enrolled_subjects = self.database.get_subjects(self.student.username)   

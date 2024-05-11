@@ -20,7 +20,7 @@ class GUIApp(System):
         y = (screen_height - 200) // 2  # Height of the window is 200
         self.master.geometry(f"300x200+{x}+{y}")
 
-        self.label = tk.Label(self.master, text="University System", font=("Arial", 16))
+        self.label = tk.Label(self.master, text="GUIApp", font=("Arial", 16))
         self.label.pack()
 
         self.username_label = tk.Label(self.master, text="Username:")

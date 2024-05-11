@@ -8,7 +8,7 @@ class GUIApp(System):
     def __init__(self, master):
         super().__init__()
         self.master = master
-        master.title("University System")
+        master.title("GUIApp")
 
         self.create_widgets()
 
@@ -20,7 +20,7 @@ class GUIApp(System):
         y = (screen_height - 200) // 2  # Height of the window is 200
         self.master.geometry(f"300x200+{x}+{y}")
 
-        self.label = tk.Label(self.master, text="GUIApp", font=("Arial", 16))
+        self.label = tk.Label(self.master, text="Login Window", font=("Arial", 16))
         self.label.pack()
 
         self.username_label = tk.Label(self.master, text="Username:")

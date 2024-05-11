@@ -62,7 +62,7 @@ class Student:
             enrolled_subject_ID_list = [enrolled_subject.ID for enrolled_subject in subject_list]
             while True:
                 print('        Enrolled subjects list: ', enrolled_subject_ID_list)
-                subject_ID = input('        Please select the subject you want to remove: ')
+                subject_ID = input("        Please select the subject you want to remove(Press 'X' to return to student menu): ")
                 if subject_ID in ["x", "X"]:
                     break
                 else:

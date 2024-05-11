@@ -77,12 +77,12 @@ class Admin():
                 else:
                     print(f"        \033[93mList of students: {student_ID_list}\033[0m")
                     a = input("        Please select student ID you want to remove(Enter X to return to Admin menu): ")
-                    if a not in student_ID_list and (a != "X" or a != "x"):
+                    if a not in student_ID_list and a.upper() != "X":
                         a = a.zfill(3)
                         raise ValueError(f"Student ID {a} does not exist or is invalid format")
-                    elif a.upper() == "X":
+                    if a.upper() == "X":
                         break
-                    else:
+                    if a in student_ID_list:
                         self.database.remove_student(a)   
                         print(f"        \033[93mStudent with ID {a} removed successfully.\033[0m")
                         break

@@ -20,7 +20,9 @@ class Student:
                 if re.match(self.password_pattern, new_password):
                     print('        \033[93mNew password is in correct format\033[0m')
                     while True:
-                        confirmed_password = input('        Please confirm your new password: ')
+                        confirmed_password = input("        Please confirm your new password (Enter 'X' to return to student menu): ")
+                        if confirmed_password in ['x', 'X']:
+                            break
                         if new_password == confirmed_password:
                             self.database.update_password(self.username, new_password)
                             print('        \033[93mNew password has been updated\033[0m')

@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
+from DeepSeekClient import DeepSeekClient
 
 class EnrollmentWindow(tk.Toplevel):
     def __init__(self, master, student, database):
@@ -7,6 +8,7 @@ class EnrollmentWindow(tk.Toplevel):
         self.title("Enrollment")
         self.student = student
         self.database = database
+        self.deepseek_client = DeepSeekClient()
         
         # Center the enrollment window on the screen
         screen_width = self.winfo_screenwidth()
@@ -41,6 +43,10 @@ class EnrollmentWindow(tk.Toplevel):
         # Deselect Button
         self.deselect_button = tk.Button(buttons_frame, text="Deselect", command=self.deselect_subject)
         self.deselect_button.pack(side=tk.LEFT, padx=5)
+
+        # AI Advice Button
+        self.ai_advice_button = tk.Button(buttons_frame, text="AI Study Advice", command=self.show_ai_study_advice)
+        self.ai_advice_button.pack(side=tk.LEFT, padx=5)
 
         # Return Button
         self.return_button = tk.Button(buttons_frame, text="Return to Login", command=self.return_to_login)
@@ -96,3 +102,10 @@ class EnrollmentWindow(tk.Toplevel):
     def deselect_subject(self):
         self.subject_listbox.selection_clear(0, tk.END)
 
+    def show_ai_study_advice(self):
+        try:
+            subjects = self.database.get_subjects(self.student.username)
+            advice = self.deepseek_client.get_study_advice(self.student.name, subjects)
+            messagebox.showinfo("AI Study Advice", advice)
+        except Exception as e:
+            messagebox.showerror("AI Study Advice Error", str(e))

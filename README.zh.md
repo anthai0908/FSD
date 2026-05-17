@@ -59,6 +59,8 @@ AI 功能会从以下位置读取 `DEEPSEEK_API_KEY`：
 - 当前 shell 环境变量
 - 项目根目录下的 `.env` 文件
 
+你可以先把 `.env.example` 复制为 `.env`，再把占位值替换成你自己的真实 key。
+
 示例：
 
 ```env

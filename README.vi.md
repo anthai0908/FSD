@@ -59,6 +59,8 @@ pip install -r requirements.txt
 - biến môi trường hiện tại
 - file `.env` ở thư mục gốc dự án
 
+Bạn có thể sao chép `.env.example` thành `.env`, rồi thay giá trị mẫu bằng key thật của bạn.
+
 Ví dụ:
 
 ```env

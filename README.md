@@ -65,6 +65,8 @@ The AI features read `DEEPSEEK_API_KEY` from either:
 - your shell environment, or
 - a local `.env` file in the project root
 
+Copy `.env.example` to `.env` and replace the placeholder value with your real key.
+
 Example `.env` entry:
 
 ```env

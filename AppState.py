@@ -104,6 +104,7 @@ class MetricsStore:
         self.window_seconds = window_seconds
         self.events = deque(maxlen=max_events)
         self.active_requests = 0
+        self.total_started = 0
         self.total_requests = 0
         self.lock = threading.RLock()
 
@@ -111,6 +112,7 @@ class MetricsStore:
         started_at = time.perf_counter()
         with self.lock:
             self.active_requests += 1
+            self.total_started += 1
         return started_at
 
     def request_finished(self, path, method, status_code, started_at):
@@ -136,6 +138,7 @@ class MetricsStore:
             self._prune(now)
             events = list(self.events)
             active_requests = self.active_requests
+            total_started = self.total_started
             total_requests = self.total_requests
 
         durations = [event["duration"] for event in events]
@@ -151,6 +154,7 @@ class MetricsStore:
 
         return {
             "active_requests": active_requests,
+            "total_started": total_started,
             "total_requests": total_requests,
             "window_requests": len(events),
             "rps": len(events) / elapsed if elapsed else 0,

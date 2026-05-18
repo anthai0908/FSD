@@ -270,13 +270,14 @@ async def admin_dashboard(request: Request):
                     <div class="panel-header">
                         <div>
                             <h2>Live Site Usage</h2>
-                            <p class="muted">Rolling 5-minute request window. Smooth-user estimate is based on current p95 latency and previous local load tests.</p>
+                            <p class="muted">Metrics are in memory for this running server process. Rolling-window values use the last 5 minutes.</p>
                         </div>
                     </div>
                     <table>
                         <thead><tr><th>Metric</th><th>Value</th></tr></thead>
                         <tbody>
-                            <tr><td>Total requests since start</td><td>{metric_snapshot["total_requests"]}</td></tr>
+                            <tr><td>Total requests received since start</td><td>{metric_snapshot["total_started"]}</td></tr>
+                            <tr><td>Completed requests since start</td><td>{metric_snapshot["total_requests"]}</td></tr>
                             <tr><td>Requests in current window</td><td>{metric_snapshot["window_requests"]}</td></tr>
                             <tr><td>Average latency</td><td>{metric_snapshot["avg_latency"]:.3f}s</td></tr>
                             <tr><td>Max latency</td><td>{metric_snapshot["max_latency"]:.3f}s</td></tr>

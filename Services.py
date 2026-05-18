@@ -12,14 +12,13 @@ class StudentPortalService:
     def __init__(self):
         self.system = System()
         self.database = self.system.database
-        self.lock = threading.RLock()
+        self.write_lock = threading.RLock()
 
     def authenticate(self, username, password):
-        with self.lock:
-            return self.system.student_authenticate(username, password)
+        return self.system.student_authenticate(username, password)
 
     def register(self, username, password, confirm_password):
-        with self.lock:
+        with self.write_lock:
             if not self.system.username_format_validation(username):
                 return False, "Username must be firstname.lastname@university.com."
             if not self.system.password_format_validation(password):
@@ -38,19 +37,17 @@ class StudentPortalService:
             return True, "Registration successful. You can now return to login."
 
     def get_student(self, username):
-        with self.lock:
-            return Student(username, self.database)
+        return Student(username, self.database)
 
     def get_subjects(self, username):
-        with self.lock:
-            return self.database.get_subjects(username)
+        return self.database.get_subjects(username)
 
     def enroll_subject(self, username):
-        with self.lock:
+        with self.write_lock:
             Student(username, self.database).subject_enrol()
 
     def remove_subject(self, username, subject_id):
-        with self.lock:
+        with self.write_lock:
             self.database.remove_subject(username, subject_id)
 
 

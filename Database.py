@@ -23,6 +23,19 @@ class Database:
             students = session.query(StudentRecord).all()
             return {student.username: student.password for student in students}
 
+    def username_exists(self, username):
+        with SessionLocal() as session:
+            return session.query(StudentRecord.id).filter_by(username=username).first() is not None
+
+    def authenticate_student(self, username, password):
+        with SessionLocal() as session:
+            student = (
+                session.query(StudentRecord.password)
+                .filter_by(username=username)
+                .one_or_none()
+            )
+            return bool(student and student.password == password)
+
     def get_student_ID_list(self):
         with SessionLocal() as session:
             return [student.student_id for student in session.query(StudentRecord).all()]

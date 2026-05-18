@@ -5,74 +5,105 @@ import time
 
 import httpx
 
+from models import SessionLocal, StudentRecord
 
-BASE_URL = "http://127.0.0.1:8000"
-USERNAME = "zhuhang.li@university.com"
-PASSWORD = "Zhuhangli123"
+DEFAULT_BASE_URL = "http://127.0.0.1:8001"
 
 
-async def run_user(client, index):
-    start = time.perf_counter()
-    try:
-        login_response = await client.post(
-            f"{BASE_URL}/login",
-            data={"username": USERNAME, "password": PASSWORD},
-            follow_redirects=False,
+def build_client_kwargs(base_url, timeout, transport):
+    if transport == "asgi":
+        from AsyncWebApp import app
+
+        return {
+            "base_url": "http://testserver",
+            "timeout": timeout,
+            "transport": httpx.ASGITransport(app=app),
+        }
+    return {"base_url": base_url, "timeout": timeout}
+
+
+def load_credentials(limit):
+    with SessionLocal() as session:
+        rows = (
+            session.query(StudentRecord.username, StudentRecord.password)
+            .order_by(StudentRecord.username)
+            .limit(limit)
+            .all()
         )
-        if login_response.status_code not in (302, 303):
-            return False, time.perf_counter() - start, f"login {login_response.status_code}"
+    return [(username, password) for username, password in rows]
 
-        enrollment_response = await client.get(f"{BASE_URL}/enrollment")
-        if enrollment_response.status_code != 200:
-            return False, time.perf_counter() - start, f"enrollment {enrollment_response.status_code}"
-        if "Current Subjects" not in enrollment_response.text:
-            return False, time.perf_counter() - start, "missing dashboard content"
+
+async def run_user(base_url, credential, index, timeout, transport):
+    start = time.perf_counter()
+    username, password = credential
+    try:
+        async with httpx.AsyncClient(**build_client_kwargs(base_url, timeout, transport)) as client:
+            login_response = await client.post(
+                "/login",
+                data={"username": username, "password": password},
+                follow_redirects=False,
+            )
+            if login_response.status_code not in (302, 303):
+                return False, time.perf_counter() - start, f"login {login_response.status_code}"
+
+            enrollment_response = await client.get("/enrollment")
+            if enrollment_response.status_code != 200:
+                return False, time.perf_counter() - start, f"enrollment {enrollment_response.status_code}"
+            if "Current Subjects" not in enrollment_response.text:
+                return False, time.perf_counter() - start, "missing dashboard content"
 
         return True, time.perf_counter() - start, ""
     except Exception as exc:
         return False, time.perf_counter() - start, f"{type(exc).__name__}: {exc}"
 
 
-async def run_chat_user(client, index):
+async def run_chat_user(base_url, credential, index, timeout, transport):
     start = time.perf_counter()
+    username, password = credential
     try:
-        login_response = await client.post(
-            f"{BASE_URL}/login",
-            data={"username": USERNAME, "password": PASSWORD},
-            follow_redirects=False,
-        )
-        if login_response.status_code not in (302, 303):
-            return False, time.perf_counter() - start, f"login {login_response.status_code}"
+        async with httpx.AsyncClient(**build_client_kwargs(base_url, timeout, transport)) as client:
+            login_response = await client.post(
+                "/login",
+                data={"username": username, "password": password},
+                follow_redirects=False,
+            )
+            if login_response.status_code not in (302, 303):
+                return False, time.perf_counter() - start, f"login {login_response.status_code}"
 
-        async with client.stream(
-            "POST",
-            f"{BASE_URL}/chat-stream",
-            data={"message": f"Give one short tip for test user {index}."},
-        ) as response:
-            if response.status_code != 200:
-                return False, time.perf_counter() - start, f"chat {response.status_code}"
-            chunks = []
-            async for chunk in response.aiter_text():
-                chunks.append(chunk)
-                if sum(len(item) for item in chunks) >= 80:
-                    break
-        if not "".join(chunks).strip():
-            return False, time.perf_counter() - start, "empty stream"
+            async with client.stream(
+                "POST",
+                "/chat-stream",
+                data={"message": f"Give one short tip for test user {index}."},
+            ) as response:
+                if response.status_code != 200:
+                    return False, time.perf_counter() - start, f"chat {response.status_code}"
+                chunks = []
+                async for chunk in response.aiter_text():
+                    chunks.append(chunk)
+                    if sum(len(item) for item in chunks) >= 80:
+                        break
+            if not "".join(chunks).strip():
+                return False, time.perf_counter() - start, "empty stream"
 
         return True, time.perf_counter() - start, ""
     except Exception as exc:
         return False, time.perf_counter() - start, f"{type(exc).__name__}: {exc}"
 
 
-async def run_batch(concurrency, mode):
+async def run_batch(base_url, concurrency, mode, transport):
+    credentials = load_credentials(concurrency)
+    if not credentials:
+        raise RuntimeError("No student credentials found in the database.")
+
     timeout = httpx.Timeout(60.0)
-    limits = httpx.Limits(max_connections=concurrency + 10, max_keepalive_connections=concurrency + 10)
-    async with httpx.AsyncClient(timeout=timeout, limits=limits) as client:
-        task_fn = run_chat_user if mode == "chat" else run_user
-        tasks = [task_fn(client, index) for index in range(concurrency)]
-        start = time.perf_counter()
-        results = await asyncio.gather(*tasks)
-        total = time.perf_counter() - start
+    task_fn = run_chat_user if mode == "chat" else run_user
+    tasks = [
+        task_fn(base_url, credentials[index % len(credentials)], index, timeout, transport)
+        for index in range(concurrency)
+    ]
+    start = time.perf_counter()
+    results = await asyncio.gather(*tasks)
+    total = time.perf_counter() - start
 
     successes = [duration for ok, duration, _ in results if ok]
     failures = [error for ok, _, error in results if not ok]
@@ -94,12 +125,14 @@ async def run_batch(concurrency, mode):
 
 async def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--base-url", default=DEFAULT_BASE_URL)
     parser.add_argument("--mode", choices=["page", "chat"], default="page")
+    parser.add_argument("--transport", choices=["network", "asgi"], default="network")
     parser.add_argument("--concurrency", type=int, nargs="+", default=[10, 25, 50, 100])
     args = parser.parse_args()
 
     for concurrency in args.concurrency:
-        result = await run_batch(concurrency, args.mode)
+        result = await run_batch(args.base_url, concurrency, args.mode, args.transport)
         print(
             f"mode={result['mode']} concurrency={result['concurrency']} "
             f"success={result['success']} failed={result['failed']} "

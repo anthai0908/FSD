@@ -81,10 +81,12 @@ DEEPSEEK_API_KEY=your_api_key_here
 ./run_web.sh
 ```
 
+这个脚本现在会转发到异步 Web 启动器，因此管理员登录也能正常使用。
+
 访问：
 
 ```text
-http://127.0.0.1:8000/login
+http://127.0.0.1:8001/login
 ```
 
 ### 异步 Web 版本
@@ -93,10 +95,12 @@ http://127.0.0.1:8000/login
 ./run_async_web.sh
 ```
 
+这是现在推荐的 Web 启动方式，并且支持学生和管理员登录。
+
 访问：
 
 ```text
-http://127.0.0.1:8000/login
+http://127.0.0.1:8001/login
 ```
 
 ## 默认账号
@@ -112,6 +116,24 @@ http://127.0.0.1:8000/login
 
 ```bash
 python migrate_csv_to_orm.py
+```
+
+如果你想批量登录所有学生账号并检查是否成功，可以运行：
+
+```bash
+.venv-tk/bin/python batch_login_students.py --base-url http://127.0.0.1:8001
+```
+
+如果你想对正在运行的 Web 服务做登录并发测试，可以运行：
+
+```bash
+.venv-tk/bin/python load_test.py --base-url http://127.0.0.1:8001 --mode page --concurrency 10 30 60
+```
+
+如果你想绕过端口、直接在进程内测试 FastAPI 应用，可以运行：
+
+```bash
+.venv-tk/bin/python load_test.py --transport asgi --mode page --concurrency 10 30 60
 ```
 
 ## 说明

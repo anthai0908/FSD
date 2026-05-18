@@ -87,10 +87,12 @@ DEEPSEEK_API_KEY=your_api_key_here
 ./run_web.sh
 ```
 
+This script now forwards to the async web app launcher so admin login works.
+
 Open:
 
 ```text
-http://127.0.0.1:8000/login
+http://127.0.0.1:8001/login
 ```
 
 ### Async web app
@@ -99,10 +101,12 @@ http://127.0.0.1:8000/login
 ./run_async_web.sh
 ```
 
+This is the canonical web launcher and supports both student and admin login.
+
 Open:
 
 ```text
-http://127.0.0.1:8000/login
+http://127.0.0.1:8001/login
 ```
 
 ## Demo Credentials
@@ -117,6 +121,24 @@ If you want to import the CSV seed data into the database, run:
 
 ```bash
 python migrate_csv_to_orm.py
+```
+
+To batch login all student accounts against the running web app, run:
+
+```bash
+.venv-tk/bin/python batch_login_students.py --base-url http://127.0.0.1:8001
+```
+
+To run a page-login concurrency test against the running web app:
+
+```bash
+.venv-tk/bin/python load_test.py --base-url http://127.0.0.1:8001 --mode page --concurrency 10 30 60
+```
+
+To test the FastAPI app in-process without using a socket:
+
+```bash
+.venv-tk/bin/python load_test.py --transport asgi --mode page --concurrency 10 30 60
 ```
 
 ## Notes

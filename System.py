@@ -102,11 +102,7 @@ class System:
         return (firstname +' '+ lastname)
         
     def check_username(self, username):
-        username_dict = self.database.get_student_username_dict()
-        if username not in username_dict.keys():
-            return True
-        else:
-            return False
+        return not self.database.username_exists(username)
                
     def ID_generate(self):
         ID_list = self.database.get_student_ID_list()
@@ -118,11 +114,7 @@ class System:
         return ID
     
     def student_authenticate(self, username, password):
-        username_dict = self.database.get_student_username_dict()
-        if username  in username_dict.keys() and password == username_dict[username]:
-            return True
-        else: 
-            return False
+        return self.database.authenticate_student(username, password)
         
     def admin_authenticate(self, username, password):
         if username in self.admin_dict.keys() and password == self.admin_dict[username]:
@@ -216,4 +208,3 @@ class System:
 
 if __name__ == '__main__':
     System().main()
-

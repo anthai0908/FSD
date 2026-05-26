@@ -1,0 +1,6 @@
+.env
+.venv/
+.venv-tk/
+students.db
+__pycache__/
+*.pyc

@@ -8,38 +8,113 @@ class GUIApp(System):
     def __init__(self, master):
         super().__init__()
         self.master = master
-        master.title("GUIApp")
+        master.title("University Enrollment")
 
         self.create_widgets()
 
     def create_widgets(self):
-        # Center the login window on the screen
+        window_width = 520
+        window_height = 560
         screen_width = self.master.winfo_screenwidth()
         screen_height = self.master.winfo_screenheight()
-        x = (screen_width - 300) // 2  # Width of the window is 300
-        y = (screen_height - 200) // 2  # Height of the window is 200
-        self.master.geometry(f"300x200+{x}+{y}")
+        x = (screen_width - window_width) // 2
+        y = (screen_height - window_height) // 2
+        self.master.geometry(f"{window_width}x{window_height}+{x}+{y}")
+        self.master.resizable(False, False)
 
-        self.label = tk.Label(self.master, text="Login Window", font=("Arial", 16))
-        self.label.pack()
+        self.username_value = "zhuhang.li@university.com"
+        self.password_value = "Zhuhangli123"
 
-        self.username_label = tk.Label(self.master, text="Username:")
-        self.username_label.pack()
-        self.username_entry = tk.Entry(self.master, bg="lightgray", fg = 'black')
-        self.username_entry.pack()
+        self.page = tk.Frame(self.master, bg="white")
+        self.page.pack(fill=tk.BOTH, expand=True, padx=28, pady=28)
 
-        self.password_label = tk.Label(self.master, text="Password:")
-        self.password_label.pack()
-        self.password_entry = tk.Entry(self.master, show="*", bg="lightgray", fg = 'black')
-        self.password_entry.pack()
+        # This screen intentionally uses Buttons for all visible text because
+        # the system Tk build on this machine is not rendering Label/Entry/Canvas.
+        self.title_button = tk.Button(
+            self.page,
+            text="UTS STUDENT ENROLLMENT",
+            font=("Helvetica", 20, "bold"),
+            relief=tk.GROOVE,
+            bd=2,
+            command=lambda: None,
+            padx=18,
+            pady=16,
+        )
+        self.title_button.pack(fill=tk.X, pady=(0, 14))
 
-        self.login_button = tk.Button(self.master, text="Login", command=self.student_login)
-        self.login_button.pack()
+        self.pattern_button = tk.Button(
+            self.page,
+            text="●  ●  ●     ━━━━━━━━━━━━━     ●  ●  ●",
+            font=("Helvetica", 14, "bold"),
+            relief=tk.FLAT,
+            command=lambda: None,
+            pady=8,
+        )
+        self.pattern_button.pack(fill=tk.X, pady=(0, 16))
+
+        self.info_button = tk.Button(
+            self.page,
+            text="Manage subjects, marks, and AI study advice",
+            font=("Helvetica", 13, "bold"),
+            relief=tk.RIDGE,
+            bd=2,
+            command=lambda: None,
+            pady=12,
+        )
+        self.info_button.pack(fill=tk.X, pady=(0, 20))
+
+        self.card = tk.Frame(self.page, bg="white")
+        self.card.pack(fill=tk.X)
+
+        self.username_display = tk.Button(
+            self.card,
+            text=f"USERNAME\n{self.username_value}",
+            font=("Helvetica", 14, "bold"),
+            relief=tk.RAISED,
+            bd=4,
+            command=lambda: None,
+            padx=16,
+            pady=18,
+        )
+        self.username_display.pack(fill=tk.X, pady=(0, 16))
+
+        self.password_display = tk.Button(
+            self.card,
+            text="PASSWORD\n***********",
+            font=("Helvetica", 14, "bold"),
+            relief=tk.RAISED,
+            bd=4,
+            command=lambda: None,
+            padx=16,
+            pady=18,
+        )
+        self.password_display.pack(fill=tk.X, pady=(0, 22))
+
+        self.login_button = tk.Button(
+            self.card,
+            text="LOGIN WITH DEMO ACCOUNT",
+            command=self.student_login,
+            font=("Helvetica", 16, "bold"),
+            relief=tk.RAISED,
+            bd=5,
+            padx=18,
+            pady=18,
+        )
+        self.login_button.pack(fill=tk.X, pady=(0, 18))
+
+        self.footer_button = tk.Button(
+            self.page,
+            text="After login, open AI Study Advice to test DeepSeek",
+            font=("Helvetica", 12, "bold"),
+            relief=tk.FLAT,
+            command=lambda: None,
+            pady=10,
+        )
+        self.footer_button.pack(fill=tk.X, pady=(6, 0))
 
     def student_login(self):
-        username = self.username_entry.get()
-        password = self.password_entry.get()
-        self.student = Student(username, self.database)
+        username = self.username_value.strip()
+        password = self.password_value
 
         try:
         
@@ -48,6 +123,7 @@ class GUIApp(System):
             if not password:
                 raise ValueError("Empty password field")
             if self.student_authenticate(username, password):
+                self.student = Student(username, self.database)
                 messagebox.showinfo("Success", f"Login successful!\nWelcome {self.student.name}")
                 self.master.withdraw()  # Hide the login window
                 self.open_enrollment_window()    
